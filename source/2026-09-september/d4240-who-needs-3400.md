@@ -88,7 +88,7 @@ P3400R4 Section 6 cites prototypes funded by the paper author's employer, behind
 
 ## Predictions
 
-The following predictions extrapolate from the published evidence in the preceding section. Each identifies a behavioral pattern that the structural position of an entity requiring P3400 would produce. They are falsifiable: if the committee record does not match them, they are wrong.
+The following predictions extrapolate from the published evidence in the preceding section. Each identifies a behavioral pattern that the structural position of an entity requiring P3400 would produce. They are falsifiable: If the committee record does not match them, they are wrong.
 
 **Prediction 1.** An entity that needs P3400 will characterize the C++26 Contracts MVP as unusable without it, framing the extension as urgent rather than optional.
 

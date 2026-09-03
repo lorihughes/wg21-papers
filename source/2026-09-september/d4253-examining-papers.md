@@ -28,13 +28,13 @@ Robert Leahy has authored production code in NVIDIA's stdexec<sup>[1]</sup> (the
 
 In broad terms a regular (i.e. synchronous) function call has access to two forms of storage throughout its lifetime (note that the "lifetime" of a regular function call is the time between the call thereto and the return therefrom): stack storage (i.e. "variables with automatic storage duration") and heap storage (i.e. "variables with dynamic storage duration").<sup>[4]</sup>
 
-Leahy establishes in P3373R2<sup>[4]</sup> that asynchronous operations within the framework of `std::execution` analogously have access to two forms of storage throughout their lifetime (note that the "lifetime" of an asynchronous operation is the time between a call to `std::execution::start` on the operation state and the fulfillment of the "receiver contract"): contents of the operation state and heap storage.<sup>[4]</sup> The operation state is the asynchronous analog of a synchronous stack frame - local stable storage the operation can rely upon throughout its lifetime.<sup>[11]</sup> Of course, the analogy is structurally precise: a sender is a fully curried function, a receiver is a call site, connection produces the operation state (i.e. the stack frame), `start` delegates forward progress, and the completion signal is the return.
+Leahy establishes in P3373R2<sup>[4]</sup> that asynchronous operations within the framework of `std::execution` analogously have access to two forms of storage throughout their lifetime (note that the "lifetime" of an asynchronous operation is the time between a call to `std::execution::start` on the operation state and the fulfillment of the "receiver contract"): contents of the operation state and heap storage.<sup>[4]</sup> The operation state is the asynchronous analog of a synchronous stack frame - local stable storage the operation can rely upon throughout its lifetime.<sup>[11]</sup> Of course, the analogy is structurally precise: A sender is a fully curried function, a receiver is a call site, connection produces the operation state (i.e. the stack frame), `start` delegates forward progress, and the completion signal is the return.
 
-But despite the structural elegance of the above-described analogues, Leahy identifies one area in which they lack predictive power: the lifetime of the operation state. By the analogy one would expect that the lifetime of the operation state is ended by the invocation of `std::execution::set_value`, `::set_error`, or `::set_stopped`; however this is not guaranteed to be the case in general, and in fact `std::execution` appears to guarantee exactly the opposite.<sup>[4]</sup> Put differently: whereas the stack pointer for regular synchronous code moves both up and down (i.e. "allocating" and "freeing" stack storage) the analogue thereof for asynchronous code under the framework of `std::execution` moves in only one direction (i.e. such storage is only ever "allocated").<sup>[4]</sup>
+But despite the structural elegance of the above-described analogues, Leahy identifies one area in which they lack predictive power: the lifetime of the operation state. By the analogy one would expect that the lifetime of the operation state is ended by the invocation of `std::execution::set_value`, `::set_error`, or `::set_stopped`; however this is not guaranteed to be the case in general, and in fact `std::execution` appears to guarantee exactly the opposite.<sup>[4]</sup> Put differently: Whereas the stack pointer for regular synchronous code moves both up and down (i.e. "allocating" and "freeing" stack storage) the analogue thereof for asynchronous code under the framework of `std::execution` moves in only one direction (i.e. such storage is only ever "allocated").<sup>[4]</sup>
 
 Note that Leahy frames this observation not as an indictment but as an area requiring careful standardization. His P3373R2 proposes ending predecessor operation state lifetimes early for `let_value`, `let_error`, and `let_stopped` - a change which allows the storage occupied thereby to be reused for the operation state of the second operation,<sup>[4]</sup> standardizing existing practice in libunifex. Leahy's P3682R0<sup>[5]</sup> was adopted by plenary vote, removing `std::execution::split`. His P3887R1<sup>[6]</sup> was forwarded by SG1 (8-3-1-0-0) and LEWG (10-5-0-0-0). His production code in NVIDIA's stdexec<sup>[1]</sup> constitutes the most complete AIO-to-sender bridge in the published record - a bridge whose structured concurrency finalization guarantees exactly-once completion under all paths, and whose abandonment detection addresses a problem no prior integration had solved.
 
-Which brings us to the question this paper examines: what do Leahy's published observations about `std::execution`, taken together, reveal about the scope of the sender model?
+Which brings us to the question this paper examines: What do Leahy's published observations about `std::execution`, taken together, reveal about the scope of the sender model?
 
 ## 2. The Simplest Integration
 
@@ -44,7 +44,7 @@ Leahy demonstrates this formulation in his CppCon 2025 talk<sup>[11]</sup>: a se
 
 But then we look at this code further. We notice something curious. Leahy declares `start` as `noexcept`, but the initiation is accepted generically.<sup>[11]</sup> No properties thereof have been established. The implementation can throw an exception and cause `std::terminate` - a consequence which is, as Leahy characterizes it, decidedly unergonomic.<sup>[11]</sup>
 
-And so we are confronted with a question: what does `std::execution` require of `start`?
+And so we are confronted with a question: What does `std::execution` require of `start`?
 
 ## 3. Exceptions and the Executor Wrapper
 
@@ -83,9 +83,9 @@ std::exception_ptr ex_;
 bool abandoned_{false};
 ```
 
-A recursive mutex. An intrusive linked list of stack frames for lifetime tracking. An exception pointer. An abandonment flag. A stop callback (stored separately as an optional). The `frame_` destructor<sup>[2]</sup> implements structured concurrency finalization: if the current frame is the last frame on the linked list and the completion handler has been abandoned, it releases the lock and sends either `set_error` (if an exception was stored) or `set_stopped` (if no exception) through to the receiver. The `completion_handler` destructor<sup>[2]</sup> detects abandonment by creating a frame and setting the `abandoned_` flag to `true`.
+A recursive mutex. An intrusive linked list of stack frames for lifetime tracking. An exception pointer. An abandonment flag. A stop callback (stored separately as an optional). The `frame_` destructor<sup>[2]</sup> implements structured concurrency finalization: If the current frame is the last frame on the linked list and the completion handler has been abandoned, it releases the lock and sends either `set_error` (if an exception was stored) or `set_stopped` (if no exception) through to the receiver. The `completion_handler` destructor<sup>[2]</sup> detects abandonment by creating a frame and setting the `abandoned_` flag to `true`.
 
-Note that Leahy's `frame_` destructor visits every branch of the state machine. Is the pointer null? Then the operation has already completed and there is no work to do. Otherwise: remove the frame from the intrusive linked list. Compute whether this frame should finalize the operation. If there are no frames remaining and the handler has been abandoned, finalize.<sup>[11]</sup> Every path is enumerated. No branch is left unaddressed.
+Note that Leahy's `frame_` destructor visits every branch of the state machine. Is the pointer null? Then the operation has already completed and there is no work to do. Otherwise: Remove the frame from the intrusive linked list. Compute whether this frame should finalize the operation. If there are no frames remaining and the handler has been abandoned, finalize.<sup>[11]</sup> Every path is enumerated. No branch is left unaddressed.
 
 This machinery maintains every invariant of structured concurrency. **The question the machinery raises is why these invariants require this much maintenance.**
 
@@ -140,9 +140,9 @@ Both values. No channel to choose. No data lost. The application has the full co
 
 ### 5.1. The Prescribed Algorithm
 
-Leahy prescribed that the error-code-to-channel coalescing is "best left as a separate algorithm to ensure that 'partial success' has its context fully preserved."<sup>[8]</sup> Of course, the prescription is structurally sound - it identifies the correct layer at which the problem should be addressed, and it names the obligation precisely: the context of partial success must be preserved in its entirety.
+Leahy prescribed that the error-code-to-channel coalescing is "best left as a separate algorithm to ensure that 'partial success' has its context fully preserved."<sup>[8]</sup> Of course, the prescription is structurally sound - it identifies the correct layer at which the problem should be addressed, and it names the obligation precisely: The context of partial success must be preserved in its entirety.
 
-Which brings us to the question the prescription raises: what completion signature would such an algorithm produce?
+Which brings us to the question the prescription raises: What completion signature would such an algorithm produce?
 
 The algorithm is incumbent upon routing a compound result - an error code together with a byte count - through the channels available to it. And so it must choose. If the algorithm sends both values through `set_value` - that is, `set_value_t(error_code, size_t)` - then I/O errors travel the value channel, and downstream algorithms (`then`, `let_value`, `when_all`) cannot distinguish success from failure by channel alone. The semantic purpose of channel discrimination - the raison d'etre thereof - is defeated. Every consumer must inspect the error code manually, which is precisely the convention that obtained before channels existed.
 
@@ -215,7 +215,7 @@ Leahy identifies the restriction as fundamentally arbitrary, unnecessarily makin
 
 ### 8.1. Two Obligations
 
-Both the coroutine-native task and `std::execution::task` are incumbent upon the same obligation: furnish a well-formed promise type that maps the task's successful completion semantics into the coroutine language model. Let us examine how each discharges the obligation thereby imposed.
+Both the coroutine-native task and `std::execution::task` are incumbent upon the same obligation: Furnish a well-formed promise type that maps the task's successful completion semantics into the coroutine language model. Let us examine how each discharges the obligation thereby imposed.
 
 **The coroutine-native task.** Given `task<T>` under the language rules as given:
 
@@ -231,13 +231,13 @@ Of course, the construction is unremarkable. The type parameter partitions the t
 - The promise must provide `return_value(T...)` for `set_value_t(T...)`.
 - Both names are thereby present in the promise type. Per [dcl.fct.def.coroutine]/p6, the program is ill-formed.
 - The obligation cannot be discharged under the rules as given.
-- Amend the rules: adopt P3950R0.<sup>[7]</sup> Under the amended rules, both names may coexist. The promise is well-formed. The obligation is discharged.
+- Amend the rules: Adopt P3950R0.<sup>[7]</sup> Under the amended rules, both names may coexist. The promise is well-formed. The obligation is discharged.
 
 And so the obligation is fulfilled - but only after the language has been changed to permit it.
 
 Leahy identifies the restriction as arbitrary, and the characterization is not in dispute. But the arbitrariness thereof and its significance as evidence are not in tension. An arbitrary restriction which lay dormant for a decade - encountered by no task type in cppcoro, folly::coro, libunifex, TooManyCooks, or Capy - was encountered by exactly one design. The encounter is germane precisely because the restriction is arbitrary: `std::execution::task` derives its return forms from the sender completion algebra rather than declaring them directly, and it is this derivation which creates the collision. A design that declares its return type is robust to arbitrary language restrictions. A design that derives its return type from an external algebra is not.
 
-Which brings us to the question: is it the restriction that is deficient, or is it the derivation?
+Which brings us to the question: Is it the restriction that is deficient, or is it the derivation?
 
 ## 9. What the Chain Reveals
 
@@ -295,7 +295,7 @@ This paper asks for nothing.
 
 ## Acknowledgements
 
-Robert Leahy, whose published work this paper examines in its entirety. Leahy's contributions to the sender model - production code in NVIDIA's stdexec, four WG21 papers adopted or forwarded by the committee, and CppCon talks whose constructive-proof methodology has informed this paper's argumentation - constitute the most thorough published examination of `std::execution`'s integration with existing asynchronous ecosystems. His exemplary work let us build proofs by iterative refinement: construct the simplest version of a design, identify why it is wrong, fix it, discover what the fix breaks, and repeat until every path is covered and every invariant holds. This paper is indebted to Leahy's exhaustive public record and to the rigor with which he maintains it.
+Robert Leahy, whose published work this paper examines in its entirety. Leahy's contributions to the sender model - production code in NVIDIA's stdexec, four WG21 papers adopted or forwarded by the committee, and CppCon talks whose constructive-proof methodology has informed this paper's argumentation - constitute the most thorough published examination of `std::execution`'s integration with existing asynchronous ecosystems. His exemplary work let us build proofs by iterative refinement: Construct the simplest version of a design, identify why it is wrong, fix it, discover what the fix breaks, and repeat until every path is covered and every invariant holds. This paper is indebted to Leahy's exhaustive public record and to the rigor with which he maintains it.
 
 ## References
 
