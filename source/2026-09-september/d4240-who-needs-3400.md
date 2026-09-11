@@ -10,9 +10,9 @@ reply-to:
 
 ## Abstract
 
-P3400R4<sup>[1]</sup> describes its assertion-control labels as "essential to the unhindered and widespread adoption of Contracts across the many domains in which C++ is used." This paper examines the published record behind that claim. One company has stated, in its own WG21 papers, that contracts are "business-critical," that it funds the compiler prototypes P3400R4 cites as implementation experience, and that it has appointed personnel to verify that ISO proposals satisfy its published business requirements. The published record suggests that the prototypes behind P3400R4's Section 6 are not independent implementations but corporate-sponsored branches by the paper author's employer.
+P3400R4<sup>[1]</sup> describes its assertion-control labels as "essential to the unhindered and widespread adoption of Contracts across the many domains in which C++ is used." This paper examines the public record behind that claim. One company has stated, in its own WG21 papers, that contracts are "business-critical," that it funds the compiler prototypes P3400R4 cites as implementation experience, and that it has appointed personnel to verify that ISO proposals satisfy its published business requirements. The public record suggests that the prototypes behind P3400R4's Section 6 are not independent implementations but corporate-sponsored branches by the paper author's employer.
 
-This paper then extrapolates from the published pattern to produce eight falsifiable behavioral predictions. If the committee record does not match them, they are wrong.
+This paper then generalizes from the public record and the author's observations of committee proceedings into eight falsifiable behavioral predictions. If the committee record does not match them, they are wrong.
 
 ---
 
@@ -26,7 +26,7 @@ This paper then extrapolates from the published pattern to produce eight falsifi
 
 ## The Implementer Gate
 
-This paper offers seven items from the published record, in chronological order. Each is a verbatim quotation from a published WG21 paper or a corporate website, followed by its implication for P3400R4's readiness claims.
+This paper offers seven items from the public record, in chronological order. Each is a verbatim quotation from a public source - a published WG21 paper, a corporate website, or a public code repository - followed by its implication for P3400R4's readiness claims. Two categories of material are excluded by rule: committee minutes and reflector posts. Nothing in this paper quotes them.
 
 ### 2017: "Business Requirements"
 
@@ -38,7 +38,7 @@ The title is the finding. An ISO standard is not a requirements document for any
 
 ### 2019: Management appoints verification personnel
 
-P1487R0<sup>[3]</sup> discloses corporate management directing the standardization effort:
+P1487R0<sup>[3]</sup> discloses corporate management directing the standardization effort. The paper's internal timeline dates the first appointment to September 2017 and the second to August 2018; the paper itself is published in 2019:
 
 > "Bloomberg's senior management realizing, among other features, the importance of a proper language-based contract-checking facility in C++, made the multi-year commitment to engage the services of Dr. Andrew Sutton to create a prototype version of the GCC and clang compilers consistent with the needs of even the most demanding large-scale software development companies (e.g., Google)."<sup>[3]</sup>
 
@@ -89,23 +89,23 @@ Section 6 of P3400R4 cites prototypes funded by the paper author's employer, beh
 
 ## Predictions
 
-The following predictions extrapolate from the published evidence in the preceding section. Each identifies a behavioral pattern that the structural position of an entity requiring P3400 would produce. They are falsifiable: If the committee record does not match them, they are wrong.
+The following predictions generalize from the author's observations of committee proceedings on contracts, partially corroborated by the public record cited in the preceding section. Each identifies a behavioral pattern that the structural position of an entity requiring P3400 would produce. They are falsifiable: if the committee record does not match them, they are wrong.
 
 **Prediction 1.** An entity that needs P3400 will characterize the C++26 Contracts MVP as unusable without it, framing the extension as urgent rather than optional.
 
 **Prediction 2.** An entity that needs P3400 will treat its own deployment constraints as non-negotiable requirements on the international standard's design, rather than as one stakeholder's preference among alternatives.
 
-**Prediction 3.** An entity that needs P3400 will present its adoption as inevitable, foreclosing design alternatives before the room has evaluated them.
+**Prediction 3.** An entity that needs P3400 will present the adoption of its preferred design as the default path and frame alternatives as schedule risks to be managed rather than as designs to be compared.
 
 **Prediction 4.** An entity that needs P3400 will argue that continuation past undefined behavior serves its customers, positioning a business-value judgment as a language-design principle.
 
-**Prediction 5.** An entity that needs P3400 will frame language semantics as corporate policy choices, treating the contract-violation response as a business decision rather than a safety guarantee.
+**Prediction 5.** An entity that needs P3400 will describe the choice of violation response in the vocabulary of business risk and operational policy, rather than in the vocabulary of language safety guarantees.
 
-**Prediction 6.** An entity that needs P3400 will frame committee opposition to its preferred design as blocking industry adoption, implying that the standard exists to serve large deployers.
+**Prediction 6.** An entity that needs P3400 will characterize sustained technical opposition as an obstacle to industry adoption, casting delay as harm to users rather than as unresolved design disagreement.
 
 **Prediction 7.** An entity that needs P3400 will cite its own internal deployment history as authoritative evidence, but the room cannot independently corroborate it.
 
-**Prediction 8.** An entity that needs P3400 will argue that its legacy codebase's migration constraints must shape the standard's default behavior for all users.
+**Prediction 8.** An entity that needs P3400 will present the migration constraints of its own installed base as constraints on the standard's defaults for every user.
 
 ## Disclosure
 

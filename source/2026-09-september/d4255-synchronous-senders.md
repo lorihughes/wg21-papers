@@ -440,7 +440,7 @@ Eric Niebler, Lewis Baker, Kirk Shoop, and the P2300R10 authors specified the se
 
 [16] [P4126R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4126r1.pdf) - "A Universal Continuation Model" (Vinnie Falco, Klemens Morgenstern, 2026).
 
-[17] [P3149R11](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3149r11.html) - "`async_scope` - Creating scopes for non-sequential concurrency" (Ian Petersen, Jessica Wong, 2025).
+[17] [P3149R11](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3149r11.html) - "`async_scope` &ndash; Creating scopes for non-sequential concurrency" (Ian Petersen, Jessica Wong, 2025).
 
 [18] [WSARecv](https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-wsarecv) - "WSARecv function (winsock2.h)" (Microsoft, 2018).
 
